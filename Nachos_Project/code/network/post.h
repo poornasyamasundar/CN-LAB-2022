@@ -5,10 +5,14 @@
 #include "utility.h"
 #include "callback.h"
 #include "network.h"
-#include "synchlist.h" #include "synch.h"
+#include "synchlist.h" 
+#include "synch.h"
+#include<vector>
+#include<unordered_map>
 
 struct Ethernet_Packet
-{ unsigned char preamble[7];
+{ 
+	unsigned char preamble[7];
 	unsigned char SFD;
 	unsigned char destMAC[6];	//48 bit destination mac address
 	unsigned char srcMAC[6];	//48 bit source mac address
@@ -52,5 +56,61 @@ class Ethernet_Layer : public CallBackObj
 		SynchList<unsigned char*>* messages;
 };
 
+struct IP_Fragment
+{
+	unsigned int version: 4;
+	unsigned int IHL: 4;
+	unsigned int DSCP: 6;
+	unsigned int ECN: 2;
+	unsigned short totalLength;
+	unsigned short identification;
+	unsigned int reserved: 1;
+	unsigned int DF: 1;
+	unsigned int MF: 1;
+	unsigned int fragmentOffset: 13;
+	unsigned int timeToLive: 8;
+	unsigned int protocol: 8;
+	unsigned short checksum;
+	unsigned char srcIP[4];
+	unsigned char destIP[4];
+	char payload[1480];
+
+}__attribute__((packed));
+
+struct Fragment
+{
+	bool MF;
+	char* data;
+	int offset;
+};
+
+static unsigned char ippool[10][4] = {
+	{0xe5, 0xae, 0x32, 0x18},
+    {0xae, 0x32, 0x18, 0xd9},
+    {0x3e, 0x32, 0x18, 0xd9},
+    {0xae, 0x34, 0x18, 0xd9},
+    {0xa9, 0x32, 0x18, 0xd9},
+    {0xae, 0x32, 0x58, 0xd9},
+    {0xae, 0x32, 0x18, 0xa9},
+    {0xae, 0x32, 0x28, 0xd9},
+    {0xae, 0x66, 0x18, 0xd9},
+    {0xae, 0x32, 0x99, 0xd9},
+};
+
+class IP_Layer
+{
+	public:
+		IP_Layer();
+
+		void Receive(unsigned char* data);
+		void Send(unsigned char* data, int size, unsigned char* destIP);
+
+	private:
+		unordered_map<string, vector<struct Fragment>> fragmentDict;
+		string computeHash(unsigned char* srcIP, unsigned char* destIP, int identification);
+		void check(string key);
+		void insertToMap(string key, IP_Fragment* ip_fragment);
+		short get_Random_Identification();
+};
 
 #endif

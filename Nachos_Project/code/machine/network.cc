@@ -61,7 +61,7 @@ void NetworkInput::CallBack() {
 
     // otherwise, read packet in
     char *buffer = new char[1526];
-    ReadFromSocket(sock, buffer, MaxWireSize);
+    ReadFromSocket(sock, buffer, 1526);
 
 	memcpy(current_packet, buffer, 1526);
 

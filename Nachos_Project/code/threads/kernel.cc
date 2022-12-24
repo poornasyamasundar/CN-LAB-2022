@@ -106,6 +106,7 @@ void Kernel::Initialize(char *userProgName /*=NULL*/) {
 #endif  // FILESYS_STUB
 
 	ethernet_layer = new Ethernet_Layer();
+	ip_layer = new IP_Layer();
     addrLock = new Semaphore("addrLock", 1);
     gPhysPageBitMap = new Bitmap(128);
     semTab = new STable();
@@ -201,10 +202,20 @@ void Kernel::NetworkTest() {
 	cout << "NetworkTest" << endl;
 	if( kernel->hostName == 0 )
 	{
-		char* data = (char*)calloc(1500, sizeof(char));
-		char* d = "poorna is here";
-		strcpy(data, d);
-		unsigned char destMAC[6] = {0xd5, 0xae, 0x32, 0x18, 0xd9, 0x21};
-		ethernet_layer->Send((unsigned char*)data, destMAC);
+		char* data = (char*)calloc(3000, sizeof(char));
+		for( int i = 0 ; i < 1480 ; i++ )
+		{
+			data[i] = 'a';
+		}
+		for( int i = 1480 ; i < 2960 ; i++ )
+		{
+			data[i] = 'b';
+		}
+		for( int i = 2960 ; i < 3000 ; i++ )
+		{
+			data[i] = 'c';
+		}
+		unsigned char destIP[4] = {0xae, 0x32, 0x18, 0xd9};
+		ip_layer->Send((unsigned char*)data, 3000, destIP);
 	}
 }

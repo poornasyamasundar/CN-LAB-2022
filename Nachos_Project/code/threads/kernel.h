@@ -22,6 +22,7 @@
 class SynchConsoleInput;
 class SynchConsoleOutput;
 class Ethernet_Layer;
+class IP_Layer;
 class SynchDisk;
 class Semaphore;
 #include "bitmap.h"
@@ -60,6 +61,7 @@ class Kernel {
     FileSystem *fileSystem;
 
 	Ethernet_Layer *ethernet_layer;
+	IP_Layer *ip_layer;
     Semaphore *addrLock;
     Bitmap *gPhysPageBitMap;
     STable *semTab;
