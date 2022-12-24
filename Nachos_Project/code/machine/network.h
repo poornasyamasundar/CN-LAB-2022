@@ -18,17 +18,10 @@
 #include "copyright.h"
 #include "utility.h"
 #include "callback.h"
-#include "../network/ethernet.h"
 
 // Network address -- uniquely identifies a machine.  This machine's ID
 //  is given on the command line.
 typedef int NetworkAddress;
-
-// The following class defines the network packet header.
-// The packet header is prepended to the data payload by the Network driver,
-// before the packet is sent over the wire.  The format on the wire is:
-//	packet header (PacketHeader)
-//	data (containing MailHeader from the PostOffice!)
 
 class PacketHeader {
    public:
@@ -59,9 +52,7 @@ class NetworkInput : public CallBackObj {
     // Allocate and initialize network input driver
     ~NetworkInput();  // De-allocate the network input driver data
 
-    //PacketHeader Receive(char *data);
-	Ethernet Receive();
-    //void Receive(char *data);
+    void Receive(char *data);
     // Poll the network for incoming messages.
     // If there is a packet waiting, copy the
     // packet into "data" and return the header.
@@ -78,7 +69,7 @@ class NetworkInput : public CallBackObj {
                                  // 	arrived.
     bool packetAvail;            // Packet has arrived, can be pulled off of
                                  //   network
-    Ethernet inHdr;          // Information about arrived packet
+	char current_packet[1526];
     char inbox[MaxPacketSize];   // Data for arrived packet
 };
 
@@ -88,17 +79,7 @@ class NetworkOutput : public CallBackObj {
     // Allocate and initialize network output driver
     ~NetworkOutput();  // De-allocate the network input driver data
 
-    //void Send(PacketHeader hdr, char *data);
-	void Send(Ethernet eth);
-    // Send the packet data to a remote machine,
-    // specified by "hdr".  Returns immediately.
-    // "callWhenDone" is invoked once the next
-    // packet can be sent.  Note that callWhenDone
-    // is called whether or not the packet is
-    // dropped, and note that the "from" field of
-    // the PacketHeader is filled in automatically
-    // by Send().
-
+    void Send(unsigned char *data);
     void CallBack();  // Interrupt handler, called when message is
                       // sent
 

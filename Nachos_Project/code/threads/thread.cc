@@ -25,7 +25,9 @@
 // this is put at the top of the execution stack, for detecting stack overflows
 const int STACK_FENCEPOST = 0xdedbeef;
 
-//---------------------------------------------------------------------- // Thread::Thread // 	Initialize a thread control block, so that we can then call
+//----------------------------------------------------------------------
+// Thread::Thread
+// 	Initialize a thread control block, so that we can then call
 //	Thread::Fork.
 //
 //	"threadName" is an arbitrary string, useful for debugging.
@@ -34,7 +36,8 @@ const int STACK_FENCEPOST = 0xdedbeef;
 Thread::Thread(char *threadName, bool _has_dynamic_name /*=false*/) {
     has_dynamic_name = _has_dynamic_name;
     name = threadName;
-    stackTop = NULL; stack = NULL;
+    stackTop = NULL;
+    stack = NULL;
     status = JUST_CREATED;
     for (int i = 0; i < MachineStateSize; i++) {
         machineState[i] = NULL;  // not strictly necessary, since

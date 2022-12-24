@@ -31,7 +31,6 @@ class SynchList {
 
     T RemoveFront();  // remove the first item from the front of
                       // the list, waiting if the list is empty
-	T RemoveFrontNonBlocking();
 
     void Apply(void (*f)(T));  // apply function to all elements in list
 

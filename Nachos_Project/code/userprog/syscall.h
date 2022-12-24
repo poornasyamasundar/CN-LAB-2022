@@ -48,10 +48,6 @@
 #define SC_Wait 52
 #define SC_Signal 53
 #define SC_GetPid 54
-#define SC_create_Socket 55
-#define SC_send_msg 56
-#define SC_recv_msg 57
-#define SC_close 58
 
 #ifndef IN_ASM
 
@@ -185,14 +181,6 @@ int CreateSemaphore(char *name, int semval);
 int Wait(char *name);
 
 int Signal(char *name);
-
-int create_Socket(char* ip, int destPort, int srcPort);
-
-int send_msg(int sockID, char* msg);
-
-int recv_msg(int sockID, char* msg);
-
-int close(int sockID);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program.

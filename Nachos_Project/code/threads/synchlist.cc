@@ -11,8 +11,6 @@
 
 #include "copyright.h"
 #include "synchlist.h"
-#include<iostream>
-using namespace std;
 
 //----------------------------------------------------------------------
 // SynchList<T>::SynchList
@@ -70,28 +68,11 @@ T SynchList<T>::RemoveFront() {
 
     lock->Acquire();  // enforce mutual exclusion
     while (list->IsEmpty())
-		{
-        	listEmpty->Wait(lock);  // wait until list isn't empty
-		}
+        listEmpty->Wait(lock);  // wait until list isn't empty
     item = list->RemoveFront();
     lock->Release();
     return item;
 }
-
-template <class T>
-T SynchList<T>::RemoveFrontNonBlocking() {
-    T item;
-
-    lock->Acquire();  // enforce mutual exclusion
-	if( list->IsEmpty() )
-	{
-		return NULL;
-	}
-    item = list->RemoveFront();
-    lock->Release();
-    return item;
-}
-
 
 //----------------------------------------------------------------------
 // SynchList<T>::Apply
@@ -124,7 +105,7 @@ void SynchList<T>::SelfTestHelper(void* data) {
 
 template <class T>
 void SynchList<T>::SelfTest(T val) {
-    /*Thread* helper = new Thread("ping");
+    Thread* helper = new Thread("ping");
 
     ASSERT(list->IsEmpty());
     selfTestPing = new SynchList<T>;
@@ -134,5 +115,4 @@ void SynchList<T>::SelfTest(T val) {
         ASSERT(val == this->RemoveFront());
     }
     delete selfTestPing;
-	*/
 }

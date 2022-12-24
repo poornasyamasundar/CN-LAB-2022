@@ -155,7 +155,6 @@ void Print(char *name) {
 //----------------------------------------------------------------------
 
 int main(int argc, char **argv) {
-    
     int i;
     char *debugArg = "";
     char *userProgName = NULL;  // default is not to execute a user prog
@@ -272,15 +271,18 @@ int main(int argc, char **argv) {
         ASSERTNOTREACHED();  // Execute never returns
     }
 
+	while(true)
+	{
+		kernel->currentThread->Yield();
+	}
+
     // If we don't run a user program, we may get here.
     // Calling "return" would terminate the program.
     // Instead, call Halt, which will first clean up, then
     //  terminate.
-	while(1)
-	{
-		kernel->currentThread->Yield();
-	}
     kernel->interrupt->Halt();
+
+	
 
     ASSERTNOTREACHED();
 }

@@ -1753,8 +1753,8 @@ translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
  ../threads/pcb.h
 network.o: ../machine/network.cc /usr/include/stdc-predef.h \
  ../lib/copyright.h ../machine/network.h ../lib/utility.h \
- ../machine/callback.h ../network/../network/ethernet.h ../threads/main.h \
- ../lib/debug.h ../lib/sysdep.h /usr/include/c++/11/iostream \
+ ../machine/callback.h ../threads/main.h ../lib/debug.h ../lib/sysdep.h \
+ /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -2378,27 +2378,7 @@ kernel.o: ../threads/kernel.cc /usr/include/stdc-predef.h \
  ../threads/ptable.h ../threads/pcb.h ../threads/synch.h \
  ../threads/synchlist.h ../threads/synchlist.cc ../lib/libtest.h \
  ../userprog/synchconsole.h ../machine/console.h ../filesys/synchdisk.h \
- ../machine/disk.h ../network/post.h ../machine/network.h \
- ../network/../network/ethernet.h ../network/ethernet.h \
- ../network/ipheader.h ../network/udpheader.h \
- /usr/include/c++/11/unordered_map \
- /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/bits/hashtable.h \
- /usr/include/c++/11/bits/hashtable_policy.h /usr/include/c++/11/tuple \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
- /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
- /usr/include/c++/11/bits/invoke.h \
- /usr/include/c++/11/bits/enable_special_members.h \
- /usr/include/c++/11/bits/node_handle.h \
- /usr/include/c++/11/bits/unordered_map.h \
- /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/queue \
- /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_deque.h \
- /usr/include/c++/11/bits/deque.tcc /usr/include/c++/11/bits/stl_heap.h \
- /usr/include/c++/11/bits/stl_queue.h
+ ../machine/disk.h ../network/post.h ../machine/network.h
 main.o: ../threads/main.cc /usr/include/stdc-predef.h ../lib/copyright.h \
  ../threads/main.h ../lib/debug.h ../lib/utility.h ../lib/sysdep.h \
  /usr/include/c++/11/iostream \
@@ -4114,30 +4094,9 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  ../lib/list.cc ../machine/interrupt.h ../machine/callback.h \
  ../machine/stats.h ../threads/alarm.h ../machine/timer.h ../lib/bitmap.h \
  ../threads/stable.h ../threads/sem.h ../threads/ptable.h \
- ../threads/pcb.h ../network/post.h ../machine/network.h \
- ../network/../network/ethernet.h ../threads/synchlist.h \
- ../threads/synch.h ../threads/synchlist.cc ../network/ethernet.h \
- ../network/ipheader.h ../network/udpheader.h \
- /usr/include/c++/11/unordered_map \
- /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/bits/hashtable.h \
- /usr/include/c++/11/bits/hashtable_policy.h /usr/include/c++/11/tuple \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
- /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
- /usr/include/c++/11/bits/invoke.h \
- /usr/include/c++/11/bits/enable_special_members.h \
- /usr/include/c++/11/bits/node_handle.h \
- /usr/include/c++/11/bits/unordered_map.h \
- /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/queue \
- /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_deque.h \
- /usr/include/c++/11/bits/deque.tcc /usr/include/c++/11/bits/stl_heap.h \
- /usr/include/c++/11/bits/stl_queue.h ../userprog/syscall.h \
- ../userprog/errno.h ../userprog/ksyscall.h ../userprog/synchconsole.h \
- ../machine/console.h ../userprog/ksyscallhelper.h
+ ../threads/pcb.h ../userprog/syscall.h ../userprog/errno.h \
+ ../userprog/ksyscall.h ../userprog/synchconsole.h ../machine/console.h \
+ ../threads/synch.h ../userprog/ksyscallhelper.h
 synchconsole.o: ../userprog/synchconsole.cc /usr/include/stdc-predef.h \
  ../lib/copyright.h ../userprog/synchconsole.h ../lib/utility.h \
  ../machine/callback.h ../machine/console.h ../threads/synch.h \
@@ -5069,9 +5028,8 @@ synchdisk.o: ../filesys/synchdisk.cc /usr/include/stdc-predef.h \
  ../threads/pcb.h
 post.o: ../network/post.cc /usr/include/stdc-predef.h ../lib/copyright.h \
  ../network/post.h ../lib/utility.h ../machine/callback.h \
- ../machine/network.h ../network/../network/ethernet.h \
- ../threads/synchlist.h ../lib/list.h ../lib/debug.h ../lib/sysdep.h \
- /usr/include/c++/11/iostream \
+ ../machine/network.h ../threads/synchlist.h ../lib/list.h ../lib/debug.h \
+ ../lib/sysdep.h /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -5224,26 +5182,7 @@ post.o: ../network/post.cc /usr/include/stdc-predef.h ../lib/copyright.h \
  ../threads/kernel.h ../threads/scheduler.h ../machine/interrupt.h \
  ../machine/stats.h ../threads/alarm.h ../machine/timer.h ../lib/bitmap.h \
  ../threads/stable.h ../threads/sem.h ../threads/ptable.h \
- ../threads/pcb.h ../threads/synchlist.cc ../network/ethernet.h \
- ../network/ipheader.h ../network/udpheader.h \
- /usr/include/c++/11/unordered_map \
- /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/bits/hashtable.h \
- /usr/include/c++/11/bits/hashtable_policy.h /usr/include/c++/11/tuple \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
- /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
- /usr/include/c++/11/bits/invoke.h \
- /usr/include/c++/11/bits/enable_special_members.h \
- /usr/include/c++/11/bits/node_handle.h \
- /usr/include/c++/11/bits/unordered_map.h \
- /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/queue \
- /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_deque.h \
- /usr/include/c++/11/bits/deque.tcc /usr/include/c++/11/bits/stl_heap.h \
- /usr/include/c++/11/bits/stl_queue.h
+ ../threads/pcb.h ../threads/synchlist.cc
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above

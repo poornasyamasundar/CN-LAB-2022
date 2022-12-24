@@ -1,7 +1,10 @@
 /* Start.s
  *	Assembly language assist for user programs running on top of Nachos.
  *
- *	Since we don't want to pull in the entire C library, we define *	what we need for a user program here, namely Start and the system *	calls.  */
+ *	Since we don't want to pull in the entire C library, we define
+ *	what we need for a user program here, namely Start and the system
+ *	calls.
+ */
 
 #define IN_ASM
 #include "syscall.h"
@@ -15,7 +18,8 @@
  *
  * 	NOTE: This has to be first, so that it gets loaded at location 0.
  *	The Nachos kernel always starts a program by jumping to location 0.
- * ------------------------------------------------------------- */
+ * -------------------------------------------------------------
+ */
 
 	.globl __start
 	.ent	__start
@@ -53,41 +57,6 @@ Add:
 	syscall
 	j 	$31
 	.end Add
-
-	.globl create_Socket
-	.ent	create_Socket
-create_Socket:
-	addiu $2,$0,SC_create_Socket
-	syscall
-	j 	$31
-	.end create_Socket
-
-	.globl recv_msg
-	.ent	recv_msg
-recv_msg:
-	addiu $2,$0,SC_recv_msg
-	syscall
-	j 	$31
-	.end recv_msg
-
-
-	.globl send_msg
-	.ent	send_msg
-send_msg:
-	addiu $2,$0,SC_send_msg
-	syscall
-	j 	$31
-	.end send_msg
-
-
-	.globl close
-	.ent	close
-close:
-	addiu $2,$0,SC_close
-	syscall
-	j 	$31
-	.end close
-
 
 	.globl Exit
 	.ent	Exit
@@ -304,7 +273,6 @@ GetPid:
 	syscall
 	j	$31
 	.end GetPid
-
 
 /* dummy function to keep gcc happy */
         .globl  __main

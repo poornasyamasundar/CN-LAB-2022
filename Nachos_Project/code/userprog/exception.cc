@@ -23,7 +23,6 @@
 
 #include "copyright.h"
 #include "main.h"
-#include "post.h"
 #include "syscall.h"
 #include "ksyscall.h"
 //----------------------------------------------------------------------
@@ -395,56 +394,6 @@ void handle_SC_GetPid() {
     return move_program_counter();
 }
 
-void handle_SC_createSocket()
-{
-	int virtAddr = kernel->machine->ReadRegister(4);
-	char* ipAdr = stringUser2System(virtAddr);
-
-	int srcPort = kernel->machine->ReadRegister(5);
-	int destPort = kernel->machine->ReadRegister(6);
-
-	int res = kernel->addSocket(ipAdr, srcPort, destPort);
-	
-    kernel->machine->WriteRegister(2, res);
-	delete[] ipAdr;
-	return move_program_counter();
-}
-void handle_SC_send_msg()
-{
-	int sockID = kernel->machine->ReadRegister(4);
-	int virtAddr = kernel->machine->ReadRegister(5);
-	char* msg = stringUser2System(virtAddr);
-
-	Network_Socket ns = kernel->getSocket(sockID);
-	kernel->udplayer->Send(msg, strlen(msg), ns.destIP, ns.srcPort, ns.destPort);
-
-	delete[] msg;
-	return move_program_counter();
-}
-void handle_SC_recv_msg()
-{
-	int sockID = kernel->machine->ReadRegister(4);
-	int virtAddr = kernel->machine->ReadRegister(5);
-
-	char* msg = (char*)calloc(100, sizeof(char));
-	kernel->getData(sockID, msg);
-
-	string str(msg);
-	StringSys2User(msg, virtAddr);
-
-	delete[] msg;
-	return move_program_counter();
-}
-void handle_SC_close()
-{
-	int sockID = kernel->machine->ReadRegister(4);
-
-	int res = kernel->removeSocket(sockID);
-    kernel->machine->WriteRegister(2, res);
-
-	return move_program_counter();
-}
-
 void ExceptionHandler(ExceptionType which) {
     int type = kernel->machine->ReadRegister(2);
 
@@ -512,14 +461,6 @@ void ExceptionHandler(ExceptionType which) {
                     return handle_SC_Signal();
                 case SC_GetPid:
                     return handle_SC_GetPid();
-				case SC_create_Socket:
-					return handle_SC_createSocket();
-				case SC_send_msg:
-					return handle_SC_send_msg();
-				case SC_recv_msg:
-					return handle_SC_recv_msg();
-				case SC_close:
-					return handle_SC_close();
                 /**
                  * Handle all not implemented syscalls
                  * If you want to write a new handler for syscall:

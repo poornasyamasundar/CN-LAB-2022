@@ -44,8 +44,6 @@
 #include "machine.h"
 #include "addrspace.h"
 
-
-
 // CPU register state to be saved on context switch.
 // The x86 needs to save only a few registers,
 // SPARC and MIPS needs to save 10 registers,
@@ -92,7 +90,6 @@ class Thread {
     int processID;
     int parrentID;
     int exitStatus;
-
     void FreeSpace() {
         if (space != 0) delete space;
     }

@@ -1,29 +1,3 @@
-// post.h
-//	Data structures for providing the abstraction of unreliable,
-//	ordered, fixed-size message delivery to mailboxes on other
-//	(directly connected) machines.  Messages can be dropped by
-//	the network, but they are never corrupted.
-//
-// 	The US Post Office (and Canada Post! -KMS)
-//      delivers mail to the addressed mailbox.
-// 	By analogy, our post office delivers packets to a specific buffer
-// 	(MailBox), based on the mailbox number stored in the packet header.
-// 	Mail waits in the box until a thread asks for it; if the mailbox
-//      is empty, threads can wait for mail to arrive in it.
-//
-// 	Thus, the service our post office provides is to de-multiplex
-// 	incoming packets, delivering them to the appropriate thread.
-//
-//      With each message, you get a return address, which consists of a "from
-// 	address", which is the id of the machine that sent the message, and
-// 	a "from box", which is the number of a mailbox on the sending machine
-//	to which you can send an acknowledgement, if your protocol requires
-//	this.
-//
-// Copyright (c) 1992-1996 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation
-// of liability and disclaimer of warranty provisions.
-
 #ifndef POST_H
 #define POST_H
 
@@ -31,174 +5,52 @@
 #include "utility.h"
 #include "callback.h"
 #include "network.h"
-#include "synchlist.h"
-#include "synch.h"
-#include "ethernet.h"
-#include "ipheader.h"
-#include "udpheader.h"
-#include<unordered_map>
-#include<vector>
-#include<queue>
+#include "synchlist.h" #include "synch.h"
 
-// Mailbox address -- uniquely identifies a mailbox on a given machine.
-// A mailbox is just a place for temporary storage for messages.
-typedef int MailBoxAddress;
+struct Ethernet_Packet
+{ unsigned char preamble[7];
+	unsigned char SFD;
+	unsigned char destMAC[6];	//48 bit destination mac address
+	unsigned char srcMAC[6];	//48 bit source mac address
+	unsigned short int ethertype;
+	unsigned int crc;
+	unsigned char payload[1500];	// payload of the ethernet packet.
+}__attribute__((packed));
 
-// The following class defines part of the message header.
-// This is prepended to the message by the PostOffice, before the message
-// is sent to the Network.
-
-class MailHeader {
-   public:
-    MailBoxAddress to;    // Destination mail box
-    MailBoxAddress from;  // Mail box to reply to
-    unsigned length;      // Bytes of message data (excluding the
-                          // mail header)
+static unsigned char macpool[10][6] = 
+    {{0xe5, 0xae, 0x32, 0x18, 0xd9, 0x21},
+    {0xd5, 0xae, 0x32, 0x18, 0xd9, 0x21},
+    {0xe5, 0x3e, 0x32, 0x18, 0xd9, 0x21},
+    {0xe5, 0xae, 0x34, 0x18, 0xd9, 0x21},
+    {0xe5, 0xa9, 0x32, 0x18, 0xd9, 0x21},
+    {0xe5, 0xae, 0x32, 0x58, 0xd9, 0x21},
+    {0xe5, 0xae, 0x32, 0x18, 0xa9, 0x21},
+    {0xe5, 0xae, 0x32, 0x28, 0xd9, 0x21},
+    {0xe5, 0xae, 0x66, 0x18, 0xd9, 0x21},
+    {0xe5, 0xae, 0x32, 0x99, 0xd9, 0x21},
 };
 
-// Maximum "payload" -- real data -- that can included in a single message
-// Excluding the MailHeader and the PacketHeader
-
-#define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-
-// The following class defines the format of an incoming/outgoing
-// "Mail" message.  The message format is layered:
-//	network header (PacketHeader)
-//	post office header (MailHeader)
-//	data
-
-class Network_Socket
+class Ethernet_Layer : public CallBackObj
 {
 	public:
-		char destIP[4];
-		int srcPort;
-		int destPort;
-		SynchList<char*> *messages;
-};
+		Ethernet_Layer();
+		~Ethernet_Layer();
 
-class Mail {
-   public:
-    //Mail(PacketHeader pktH, MailHeader mailH, char *msgData);
-	Mail(Ethernet ethH);
-    // Initialize a mail message by
-    // concatenating the headers to the data
+		void Receive(unsigned char* data);
+		void Send(unsigned char* data, unsigned char* destMAC);
 
-    //PacketHeader pktHdr;     // Header appended by Network
-    //MailHeader mailHdr;      // Header appended by PostOffice
-    //char data[MaxMailSize];  // Payload -- message data
-	Ethernet ethHdr;
-};
+		static void pktrecv(void* data);
+		static void ethrecv(void* data);
 
-// The following class defines a single mailbox, or temporary storage
-// for messages.   Incoming messages are put by the PostOffice into the
-// appropriate mailbox, and these messages can then be retrieved by
-// threads on this machine.
-
-class MailBox {
-   public:
-    MailBox();   // Allocate and initialize mail box
-    ~MailBox();  // De-allocate mail box
-
-    //void Put(PacketHeader pktHdr, MailHeader mailHdr, char *data);
-	void Put(Ethernet eth);
-    // Atomically put a message into the mailbox
-    int Get(Ethernet* eth);
-    //void Get(PacketHeader *pktHdr, MailHeader *mailHdr, char *data);
-    // Atomically get a message out of the
-    // mailbox (and wait if there is no message
-    // to get!)
-   private:
-    SynchList<Mail *>
-        *messages;  // A mailbox is just a list of arrived messages
-};
-
-// The following two classes defines a "Post Office", or a collection of
-// mailboxes.  The Post Office provides two main operations:
-//	Send -- send a message to a mailbox on a remote machine
-//	Receive -- wait until a message is in the mailbox, then remove and
-//		return it.
-//
-// Incoming messages are put by the PostOffice into the
-// appropriate mailbox, waking up any threads waiting on Receive.
-
-class PostOfficeInput : public CallBackObj {
-   public:
-    PostOfficeInput(int nBoxes);  // Allocate and initialize Post Office
-    ~PostOfficeInput();           // De-allocate Post Office data
-
-	//void Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr,char *data);
-    void Receive(char* data);
-    // Retrieve a message from "box".  Wait if
-    // there is no message in the box.
-
-    static void PostalDelivery(void *data);
-    // Wait for incoming messages,
-    // and then put them in the correct mailbox
-
-	static void PostalPickup(void *data);
-
-    void CallBack();  // Called when incoming packet has arrived
-                      // and can be pulled off of network
-                      // (i.e., time to call PostalDelivery)
-
-   private:
-    NetworkInput *network;        // Physical network connection
-    MailBox *boxes;               // Table of mail boxes to hold incoming mail
-	IPLayer* iplayer;
-    int numBoxes;                 // Number of mail boxes
-    Semaphore *messageAvailable;  // V'ed when message has arrived from network
-};
-
-class PostOfficeOutput : public CallBackObj {
-   public:
-    PostOfficeOutput(double reliability);
-    // Allocate and initialize output
-    //   "reliability" is how many packets
-    //   get dropped by the underlying network
-    ~PostOfficeOutput();  // De-allocate Post Office data
-
-    //void Send(PacketHeader pktHdr, MailHeader mailHdr, char *data);
-	void Send(unsigned char* data, int dest);
-    // Send a message to a mailbox on a remote
-    // machine.  The fromBox in the MailHeader is
-    // the return box for ack's.
-
-    void CallBack();  // Called when outgoing packet has been
-                      // put on network; next packet can now be sent
-
-   private:
-    NetworkOutput *network;  // Physical network connection
-    Semaphore *messageSent;  // V'ed when next message can be sent to network
-    Lock *sendLock;          // Only one outgoing message at a time
-};
-
-struct packet
-{
-	int MF;
-	char* data;
-	int offset;
-};
-
-class IPLayer
-{
-    public:
-    IPLayer();
-    void Send(char* data, int size, int destMachine);
-    void Receive(char* data);
+		void CallBack();
 	
 	private:
-		unordered_map<string, vector<struct packet>> packetDict;
-		string computeHash(unsigned char* srcIP, unsigned char* destIP, int identification);
-		void check(string);
-		void insertToMap(string key, IPHeader* iphdr);
+		NetworkOutput *networkOut;
+		NetworkInput *networkIn;
+		Lock *sendLock;
+		Semaphore *messageAvailable;
+		SynchList<unsigned char*>* messages;
 };
 
 
-class UDPLayer
-{
-	public:
-		UDPLayer();
-		void Send(char* data, int size, char* destIP, int srcPort, int destPort);
-		void Receive(char* data);
-};
 #endif

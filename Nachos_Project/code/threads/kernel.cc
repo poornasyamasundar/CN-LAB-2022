@@ -18,9 +18,6 @@
 #include "synchdisk.h"
 #include "post.h"
 
-#include<iostream>
-using namespace std;
-
 #define MAX_PROCESS 10
 //----------------------------------------------------------------------
 // Kernel::Kernel
@@ -107,11 +104,8 @@ void Kernel::Initialize(char *userProgName /*=NULL*/) {
 #else
     fileSystem = new FileSystem(formatFlag);
 #endif  // FILESYS_STUB
-    postOfficeIn = new PostOfficeInput(10); postOfficeOut = new PostOfficeOutput(reliability);
-    iplayer = new IPLayer();
-	udplayer = new UDPLayer();
-	next_socket = 1;
 
+	ethernet_layer = new Ethernet_Layer();
     addrLock = new Semaphore("addrLock", 1);
     gPhysPageBitMap = new Bitmap(128);
     semTab = new STable();
@@ -135,9 +129,8 @@ Kernel::~Kernel() {
     delete synchConsoleOut;
     delete synchDisk;
     delete fileSystem;
-    delete postOfficeIn;
-    delete postOfficeOut;
     delete pTab;
+	delete ethernet_layer;
     delete gPhysPageBitMap;
     delete semTab;
     delete addrLock;
@@ -204,128 +197,14 @@ void Kernel::ConsoleTest() {
 //  This test works best if each Nachos machine has its own window
 //----------------------------------------------------------------------
 
-/*void Kernel::NetworkTest() {
-    if (hostName == 0 || hostName == 1) {
-        // if we're machine 1, send to 0 and vice versa
-        int farHost = (hostName == 0 ? 1 : 0);
-        PacketHeader outPktHdr, inPktHdr;
-        MailHeader outMailHdr, inMailHdr;
-        char *data = "Hello there!";
-        char *ack = "Got it!";
-        char buffer[MaxMailSize];
-
-        // construct packet, mail header for original message
-        // To: destination machine, mailbox 0
-        // From: our machine, reply to: mailbox 1
-        outPktHdr.to = farHost;
-        outMailHdr.to = 0;
-        outMailHdr.from = 1;
-        outMailHdr.length = strlen(data) + 1;
-
-        // Send the first message
-        postOfficeOut->Send(outPktHdr, outMailHdr, data);
-
-        // Wait for the first message from the other machine
-        postOfficeIn->Receive(0, &inPktHdr, &inMailHdr, buffer);
-        cout << "Got: " << buffer << " : from " << inPktHdr.from << ", box "
-             << inMailHdr.from << "\n";
-        cout.flush();
-
-        // Send acknowledgement to the other machine (using "reply to" mailbox
-        // in the message that just arrived
-        outPktHdr.to = inPktHdr.from;
-        outMailHdr.to = inMailHdr.from;
-        outMailHdr.length = strlen(ack) + 1;
-        postOfficeOut->Send(outPktHdr, outMailHdr, ack);
-
-        // Wait for the ack from the other machine to the first message we sent
-        postOfficeIn->Receive(1, &inPktHdr, &inMailHdr, buffer);
-        cout << "Got: " << buffer << " : from " << inPktHdr.from << ", box "
-             << inMailHdr.from << "\n";
-        cout.flush();
-    }
-
-    // Then we're done!
-}*/
-
-void Kernel::NetworkTest()
-{
+void Kernel::NetworkTest() {
+	cout << "NetworkTest" << endl;
 	if( kernel->hostName == 0 )
 	{
-		char data[4000];
-
-		for(int i=0;i<= 4000/1480;i++){
-			for(int j=0;j < 1480 && (i*1480 + j) < 4000;j++){
-				data[i*1480+j] = (i+'a');
-			}
-		}
-		cout << data[0] << " " << data[1479] << " " << data[1480] << " " << data[2959] << " " << data[2960]  << " " << data[3999] << endl;
-
-		udplayer->Send(data, strlen(data), "abcd", 0, 0);
-		cout << "Sent message" << endl;
+		char* data = (char*)calloc(1500, sizeof(char));
+		char* d = "poorna is here";
+		strcpy(data, d);
+		unsigned char destMAC[6] = {0xd5, 0xae, 0x32, 0x18, 0xd9, 0x21};
+		ethernet_layer->Send((unsigned char*)data, destMAC);
 	}
-}
-
-int Kernel::addSocket( char* destIP, int srcPort, int destPort)
-{
-	Network_Socket ns;
-	ns.srcPort = srcPort;
-	ns.destPort = destPort;
-	int len = strlen(destIP);
-
-	ns.messages = new SynchList<char*>();
-
-	memcpy(ns.destIP, destIP, len);
-
-	socket_info[next_socket] = ns;
-
-	next_socket++;
-	return next_socket-1;
-}
-
-int Kernel::removeSocket(int sockID)
-{
-	if( socket_info.find(sockID) == socket_info.end() )
-		return -1;
-	socket_info.erase(sockID);
-	return 1;
-}
-
-Network_Socket Kernel::getSocket(int sockID)
-{
-	Network_Socket ns;
-
-	if( socket_info.find(sockID) == socket_info.end() )
-	{
-		ns.srcPort = -1;
-		return ns;
-	}
-
-	return socket_info[sockID];
-}
-
-int Kernel::putData(int sockID, char* message)
-{
-	if( socket_info.find(sockID) == socket_info.end() )
-	{
-		return -1;
-	}
-	
-	char* buffer = (char*)calloc(100, sizeof(char));
-	memcpy(buffer, message, strlen(message));
-	socket_info[sockID].messages->Append(buffer);
-	return 1;
-}
-
-int Kernel::getData(int sockID, char* message)
-{
-	if( socket_info.find(sockID) == socket_info.end() )
-	{
-		return -1;
-	}
-
-	char* buffer = socket_info[sockID].messages->RemoveFront();
-	
-	memcpy(message, buffer, strlen(buffer));
-	return 1;
 }

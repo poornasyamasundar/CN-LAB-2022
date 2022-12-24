@@ -444,7 +444,9 @@ void ReadFromSocket(int sockID, char *buffer, int packetSize) {
 #else
     int size = sizeof(uName);
 #endif
-    retVal = recv(sockID, buffer, packetSize, 0);
+
+    retVal = recvfrom(sockID, buffer, packetSize, 0, (struct sockaddr *)&uName,
+                      &size);
 
     if (retVal != packetSize) {
         perror("in recvfrom");
@@ -469,7 +471,7 @@ void ReadFromSocket(int sockID, char *buffer, int packetSize) {
 //      to get set up.
 //      Terminate if we still fail after 10 tries.
 //----------------------------------------------------------------------
-void SendToSocket(int sockID, unsigned char *buffer, int packetSize, char *toName) {
+void SendToSocket(int sockID, char *buffer, int packetSize, char *toName) {
     struct sockaddr_un uName;
     int retVal;
     int retryCount;
