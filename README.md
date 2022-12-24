@@ -9,7 +9,7 @@ We can see 'Hello there!', 'Got it!' messages getting  printed on both the termi
 > The -m flag is used to give the nachos instances their machine ids. By default this value is 0. The -N flag is used to run a network test. Code that printed the above messages can be found at [kernel.cc](/Nachos_project/code/threads/kernel.cc).
 
 This NetworkTest is simply using the *postofficeOut.send* and *postofficeIn.receive* to send and receive messages.
-The entire documentation of this mini stack is in [post.cc](/Nachos_project/code/network/post.cc) and [post.h](/Nachos_project/code/network/post.h). The description of this implementation can be found in the [Nachos roadmap](https://users.cs.duke.edu/~narten/110/nachos/main/main.html).
+The entire documentation of this mini stack is in [post.cc](/Nachos_Project/code/network/post.cc) and [post.h](/Nachos_project/code/network/post.h). The description of this implementation can be found in the [Nachos roadmap](https://users.cs.duke.edu/~narten/110/nachos/main/main.html).
 
 Since, we are developing our own stack, we will remove the entire contents of [post.cc](/Nachos_project/code/network/post.cc) and [post.h](/Nachos_project/code/network/post.h).( don't delete the files, just make them empty).
 
