@@ -107,6 +107,7 @@ void Kernel::Initialize(char *userProgName /*=NULL*/) {
 
 	ethernet_layer = new Ethernet_Layer();
 	ip_layer = new IP_Layer();
+	udp_layer = new UDP_Layer();
     addrLock = new Semaphore("addrLock", 1);
     gPhysPageBitMap = new Bitmap(128);
     semTab = new STable();
@@ -132,6 +133,8 @@ Kernel::~Kernel() {
     delete fileSystem;
     delete pTab;
 	delete ethernet_layer;
+	delete ip_layer;
+	delete udp_layer;
     delete gPhysPageBitMap;
     delete semTab;
     delete addrLock;
@@ -216,6 +219,6 @@ void Kernel::NetworkTest() {
 			data[i] = 'c';
 		}
 		unsigned char destIP[4] = {0xae, 0x32, 0x18, 0xd9};
-		ip_layer->Send((unsigned char*)data, 3000, destIP);
+		udp_layer->Send(data, 3000, (char*)destIP, 0, 0);
 	}
 }

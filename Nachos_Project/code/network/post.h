@@ -113,4 +113,21 @@ class IP_Layer
 		short get_Random_Identification();
 };
 
+struct UDP_Datagram
+{
+	unsigned short int sourcePort;
+	unsigned short int destinationPort;
+	unsigned short int length;
+	unsigned short int checksum;
+	char data[65536];
+}__attribute__((packed));
+
+class UDP_Layer
+{
+	public:
+		UDP_Layer();
+
+		void Send(char* data, int size, char* destIP, int srcPort, int destPort);
+		void Receive(unsigned char* data);
+};
 #endif

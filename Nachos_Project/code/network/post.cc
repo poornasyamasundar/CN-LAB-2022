@@ -20,7 +20,6 @@ Ethernet_Layer::Ethernet_Layer()
 
 	messages = new SynchList<unsigned char*>;
 }
-
 Ethernet_Layer::~Ethernet_Layer()
 {
 	delete networkOut;
@@ -276,7 +275,7 @@ void IP_Layer::check(string key)
 		{
 			memcpy(datagram+i*1480, v[i].data, 1480);
 		}
-		cout << "received datagram = " << datagram << endl;
+		kernel->udp_layer->Receive((unsigned char*)datagram);
 		fragmentDict.erase(fragmentDict.find(key));
 	}
 }
@@ -289,4 +288,32 @@ void IP_Layer::Receive(unsigned char* data)
 	string key = computeHash(ip_fragment->srcIP, ip_fragment->destIP, ip_fragment->identification);
 	insertToMap(key, ip_fragment);
 	check(key);
+}
+
+UDP_Layer::UDP_Layer(){}
+
+void UDP_Layer::Send(char* data, int size, char* destIP, int srcPort, int destPort)
+{
+	const int UDPHEADERSIZE = 8;
+	UDP_Datagram udp_datagram;
+	udp_datagram.sourcePort = srcPort;
+	udp_datagram.destinationPort = destPort;
+	udp_datagram.length = size+UDPHEADERSIZE;
+	
+	memset(udp_datagram.data, '\0', 65536*sizeof(char));
+	memcpy(udp_datagram.data, data, size*sizeof(char));
+
+	unsigned char* buffer = (unsigned char*)calloc(size+UDPHEADERSIZE, sizeof(unsigned char));
+	memcpy(buffer, (const unsigned char*)&udp_datagram, size+UDPHEADERSIZE);
+
+	kernel->ip_layer->Send(buffer, size+UDPHEADERSIZE, (unsigned char*)destIP);
+}
+
+void UDP_Layer::Receive(unsigned char* data)
+{
+	UDP_Datagram* udp_datagram;
+	udp_datagram = (UDP_Datagram*)data;
+
+	cout << "Received datagram is" << endl;
+	cout << udp_datagram->data << endl;
 }
