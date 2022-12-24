@@ -58,6 +58,54 @@ Add:
 	j 	$31
 	.end Add
 
+	.globl Create_Socket
+	.ent	Create_Socket
+Create_Socket:
+	addiu $2,$0,SC_Create_Socket
+	syscall
+	j	$31
+	.end Create_Socket
+
+	.globl Close_Socket
+	.ent	Close_Socket
+Close_Socket:
+	addiu $2,$0,SC_Close_Socket
+	syscall
+	j 	$31
+	.end Close_Socket
+
+	.globl Send_Msg
+	.ent	Send_Msg
+Send_Msg:
+	addiu $2,$0,SC_Send_Msg
+	syscall
+	j 	$31
+	.end Send_Msg
+
+	.globl Bind
+	.ent	Bind
+Bind:
+	addiu $2,$0,SC_Bind
+	syscall
+	j 	$31
+	.end Bind
+
+	.globl Connect
+	.ent	Connect
+Connect:
+	addiu $2,$0,SC_Connect
+	syscall
+	j 	$31
+	.end Connect
+
+	.globl Recv_Msg
+	.ent	Recv_Msg
+Recv_Msg:
+	addiu $2,$0,SC_Recv_Msg
+	syscall
+	j 	$31
+	.end Recv_Msg
+
 	.globl Exit
 	.ent	Exit
 Exit:

@@ -394,6 +394,78 @@ void handle_SC_GetPid() {
     return move_program_counter();
 }
 
+void handle_SC_Create_Socket()
+{
+	kernel->machine->WriteRegister(2, kernel->get_socket());
+	return move_program_counter();
+}
+
+void handle_SC_Close_Socket()
+{
+	int sockID = kernel->machine->ReadRegister(4);
+	kernel->deleteSocket(sockID);
+
+	kernel->machine->WriteRegister(2,1);
+	return move_program_counter();
+}
+
+void handle_SC_Bind()
+{
+	int sockID = kernel->machine->ReadRegister(4);
+	int port = kernel->machine->ReadRegister(5);
+
+	int result = kernel->insert_bind_socket(sockID, port);
+
+	kernel->machine->WriteRegister(2, result);
+	return move_program_counter();
+}
+
+void handle_SC_Connect()
+{
+	int sockID = kernel->machine->ReadRegister(4);
+	int virtAddr = kernel->machine->ReadRegister(5);
+	char* ipAdr = stringUser2System(virtAddr);
+	int srcPort = kernel->machine->ReadRegister(6);
+	int destPort = kernel->machine->ReadRegister(7);
+
+	string ip(ipAdr);
+	int result = kernel->insert_connect_socket(sockID, ip, srcPort, destPort);
+
+	kernel->machine->WriteRegister(2, result);
+	delete[] ipAdr;
+	return move_program_counter();
+}
+
+void handle_SC_Send_Msg()
+{
+	int sockID = kernel->machine->ReadRegister(4);
+	int virtAddr = kernel->machine->ReadRegister(5);
+	char* msg = stringUser2System(virtAddr);
+
+	int result = kernel->send_message(sockID, msg);
+	kernel->machine->WriteRegister(2, result);
+	delete[] msg;
+	return move_program_counter();
+}
+
+void handle_SC_Recv_Msg()
+{
+	int sockID = kernel->machine->ReadRegister(4);
+	int virtAddr = kernel->machine->ReadRegister(5);
+	int size = kernel->machine->ReadRegister(6);
+
+	char* msg = (char*)calloc(size+1, sizeof(char));
+	int result = kernel->getData(msg, size, sockID);
+
+	string str(msg);
+	StringSys2User(msg, virtAddr);
+
+	kernel->machine->WriteRegister(2, result);
+
+	delete[] msg;
+	return move_program_counter();
+}
+
 void ExceptionHandler(ExceptionType which) {
     int type = kernel->machine->ReadRegister(2);
 
@@ -461,6 +533,18 @@ void ExceptionHandler(ExceptionType which) {
                     return handle_SC_Signal();
                 case SC_GetPid:
                     return handle_SC_GetPid();
+				case SC_Create_Socket:
+					return handle_SC_Create_Socket();
+				case SC_Close_Socket:
+					return handle_SC_Close_Socket();
+				case SC_Bind:
+					return handle_SC_Bind();
+				case SC_Connect:
+					return handle_SC_Connect();
+				case SC_Send_Msg:
+					return handle_SC_Send_Msg();
+				case SC_Recv_Msg:
+					return handle_SC_Recv_Msg();
                 /**
                  * Handle all not implemented syscalls
                  * If you want to write a new handler for syscall:

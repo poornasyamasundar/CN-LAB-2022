@@ -18,6 +18,7 @@
 #include "alarm.h"
 #include "filesys.h"
 #include "machine.h"
+#include<map>
 
 class SynchConsoleInput;
 class SynchConsoleOutput;
@@ -25,10 +26,18 @@ class Ethernet_Layer;
 class IP_Layer;
 class UDP_Layer;
 class SynchDisk;
+class Datagram_Struct;
 class Semaphore;
 #include "bitmap.h"
 #include "stable.h"
 #include "ptable.h"
+
+struct sock_struct
+{
+	unsigned char ip[4];
+	int srcPort;
+	int destPort;
+};
 
 class Kernel {
    public:
@@ -71,15 +80,29 @@ class Kernel {
 
     int hostName;  // machine identifier
 
+	int get_socket();
+	int insert_connect_socket(int sockID, string ip, int srcPort, int destPort);
+	int send_message(int sockID, char* msg);
+	int insert_bind_socket(int sockID, int port);
+	int getData(char* msg, int size, int sockID);
+	void putData(char* data, int size, int port);
+	void deleteSocket(int sockID);
+
    private:
     bool randomSlice;    // enable pseudo-random time slicing
     bool debugUserProg;  // single step user program
     double reliability;  // likelihood messages are dropped
     char *consoleIn;     // file to read console input from
     char *consoleOut;    // file to send console output to
+	int current_socket;
+	int get_ip_strToChar(string str, unsigned char* ip);
+	map<int,struct sock_struct> connected_sockets;
+	map<int,int> bind_sockets;
+	map<int, Datagram_Struct> datagrams;
+
 #ifndef FILESYS_STUB
     bool formatFlag;  // format the disk if this is true
-#endif
+	#endif
 };
 
 #endif  // KERNEL_H

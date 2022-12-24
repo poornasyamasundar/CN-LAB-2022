@@ -130,4 +130,10 @@ class UDP_Layer
 		void Send(char* data, int size, char* destIP, int srcPort, int destPort);
 		void Receive(unsigned char* data);
 };
+
+class Datagram_Struct
+{
+	public:
+		SynchList<pair<int,char*>> *messages;
+};
 #endif

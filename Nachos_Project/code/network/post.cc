@@ -108,6 +108,7 @@ void Ethernet_Layer::Receive(unsigned char* data)
 	Ethernet_Packet* eth;
 	eth = (Ethernet_Packet* )buffer;
 	
+	//copy the 1500 byte payload and return it.
 	memcpy(data, eth->payload, 1500);
 }
 
@@ -118,11 +119,13 @@ void Ethernet_Layer::CallBack()
 
 IP_Layer::IP_Layer(){}
 
+//this function generates a uniform random number from 0 to 2^16-1;
 short IP_Layer::get_Random_Identification()
 {
 	return rand()%(64*1024);
 }
 
+//This function returns a hash string with srcIP,destIP and identification numbers as inputs
 string IP_Layer::computeHash(unsigned char* srcIP, unsigned char* destIP, int identification)
 {
 	string key = "";
@@ -182,6 +185,7 @@ void IP_Layer::Send(unsigned char* data, int size, unsigned char* destIP)
 		cout << "Unknown destination IP address" << endl;
 	}
 
+	//prepare a IP fragment for each of the 1480 chunk
 	for( int i = 0 ; i < num_of_fragments ; i++ )
 	{
 		IP_Fragment ip_fragment;
@@ -201,9 +205,12 @@ void IP_Layer::Send(unsigned char* data, int size, unsigned char* destIP)
 		ip_fragment.checksum = CHECKSUM;
 		memcpy(ip_fragment.srcIP, SRCIP,4);
 		memcpy(ip_fragment.destIP, DESTIP,4);
+		//Initialize the payload with 0
 		memset(ip_fragment.payload, '\0', 1480*sizeof(char));
+		//copy the appropriate chunk to the payload
 		memcpy(ip_fragment.payload, data+i*1480, min(size-i*1480, 1480));
 
+		//call ethernet_layer.send() with this fragment as payload
 		unsigned char* buffer = (unsigned char*)calloc(ETHPAYLOADSIZE, sizeof(char));
 		memcpy(buffer, (const unsigned char*)&ip_fragment, sizeof(ip_fragment));
 
@@ -213,7 +220,7 @@ void IP_Layer::Send(unsigned char* data, int size, unsigned char* destIP)
 
 void IP_Layer::insertToMap(string key, IP_Fragment* ip_fragment)
 {
-	//if this is the first fragment of a new datagram and insert a new (key, value) pair into the map
+	//if this is the first fragment of a new datagram then insert a new (key, value) pair into the map
 	if( fragmentDict.find(key) == fragmentDict.end() )
 	{
 		vector<struct Fragment> v;
@@ -255,9 +262,11 @@ void IP_Layer::insertToMap(string key, IP_Fragment* ip_fragment)
 	}
 }
 
+//if all fragments with given key are received.
 void IP_Layer::check(string key)
 {
 	vector<struct Fragment> v = fragmentDict[key];
+	//check for missing fragments in between
 	for( int i = 0 ; i < v.size() ; i++ )
 	{
 		if( v[i].offset != i*185 )
@@ -266,10 +275,12 @@ void IP_Layer::check(string key)
 		}
 	}
 
+	//check if the last packet is received.
 	if( v.back().MF == 0 )
 	{
 		int size = v.size();
 		size *= 1480;
+		//concatenate all the fragments and call upd_layer.Receive()
 		char* datagram = (char*)calloc(size, sizeof(char));
 		for( int i = 0 ; i < v.size() ; i++ )
 		{
@@ -314,6 +325,6 @@ void UDP_Layer::Receive(unsigned char* data)
 	UDP_Datagram* udp_datagram;
 	udp_datagram = (UDP_Datagram*)data;
 
-	cout << "Received datagram is" << endl;
-	cout << udp_datagram->data << endl;
+	const int UDPHEADERSIZE = 8;
+	kernel->putData(udp_datagram->data, udp_datagram->length-UDPHEADERSIZE, udp_datagram->destinationPort);
 }

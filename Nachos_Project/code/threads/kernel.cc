@@ -108,6 +108,7 @@ void Kernel::Initialize(char *userProgName /*=NULL*/) {
 	ethernet_layer = new Ethernet_Layer();
 	ip_layer = new IP_Layer();
 	udp_layer = new UDP_Layer();
+	current_socket = 1;
     addrLock = new Semaphore("addrLock", 1);
     gPhysPageBitMap = new Bitmap(128);
     semTab = new STable();
@@ -202,7 +203,6 @@ void Kernel::ConsoleTest() {
 //----------------------------------------------------------------------
 
 void Kernel::NetworkTest() {
-	cout << "NetworkTest" << endl;
 	if( kernel->hostName == 0 )
 	{
 		char* data = (char*)calloc(3000, sizeof(char));
@@ -220,5 +220,153 @@ void Kernel::NetworkTest() {
 		}
 		unsigned char destIP[4] = {0xae, 0x32, 0x18, 0xd9};
 		udp_layer->Send(data, 3000, (char*)destIP, 0, 0);
+	}
+}
+
+int Kernel::get_socket()
+{
+	return current_socket++;
+}
+
+//create a new connected socket pair
+int Kernel::insert_connect_socket(int sockID, string ip, int srcPort, int destPort)
+{
+	struct sock_struct ss;
+	ss.srcPort = srcPort;
+	ss.destPort = destPort;
+	if( get_ip_strToChar(ip, ss.ip) == -1 )
+	{
+		return -1;
+	}
+	connected_sockets[sockID] = ss;
+	return 1;
+}
+
+int Kernel::send_message(int sockID, char* msg)
+{
+	if( connected_sockets.find(sockID) == connected_sockets.end() )
+	{
+		return 0;
+	}
+
+	kernel->udp_layer->Send(msg, strlen(msg), (char*)connected_sockets[sockID].ip, connected_sockets[sockID].srcPort, connected_sockets[sockID].destPort);
+	return 1;
+}
+
+//convert the ip from string to 4-byte ip address
+int Kernel::get_ip_strToChar(string str, unsigned char* ip)
+{
+	int i = 0;
+	int j = 0;
+	string intermediate = "";
+	for( int i = 0 ; i < str.length() ; i++ )
+	{
+		if( str[i] == '.' )
+		{
+			if( j >= 4 )
+			{
+				return -1;
+			}
+			ip[j++] = stoi(intermediate);
+			intermediate = "";
+		}
+		else
+		{
+			intermediate += str[i];
+		}
+	}
+	if( j >= 4 )
+	{
+		return -1;
+	}
+	ip[j++] = stoi(intermediate);
+
+	if( j != 4 )
+	{
+		return -1;
+	}
+	return 1;
+}
+
+//insert the socket-port pair into bind_socket map, also create an entry in datagrams map
+int Kernel::insert_bind_socket(int sockID, int port)
+{
+	if( bind_sockets.find(port) != bind_sockets.end() )
+	{
+		return -1;
+	}
+	bind_sockets[port] = sockID;
+
+	if( datagrams.find(port) == datagrams.end())
+	{
+		Datagram_Struct ds;
+		ds.messages = new SynchList<pair<int,char*>>();
+		datagrams[port] = ds;
+	}
+
+	return 1;
+}
+
+//get the datagram from the datagrams map
+int Kernel::getData(char* msg, int size, int sockID)
+{
+	//if the socket is not binded then return -1
+	int port = -1;
+	for( auto i : bind_sockets )
+	{
+		if( i.second == sockID )
+		{
+			port = i.first;
+			break;
+		}
+	}
+	if( port == -1 )
+	{
+		return -1;
+	}
+
+	pair<int,char*> p = datagrams[port].messages->RemoveFront();
+
+	memcpy(msg, p.second, min(size,p.first));
+
+	return 1;
+}
+
+//put the datagram into the datagrams map
+void Kernel::putData(char* data, int size, int port)
+{
+	if( datagrams.find(port) == datagrams.end())
+	{
+		Datagram_Struct ds;
+		ds.messages = new SynchList<pair<int,char*>>();
+		datagrams[port] = ds;
+	}
+
+	datagrams[port].messages->Append(make_pair(size,data));
+	return;
+}
+
+void Kernel::deleteSocket(int sockID)
+{
+	//delete the socket from connected sockets.
+	if( connected_sockets.find(sockID) != connected_sockets.end())
+	{
+		connected_sockets.erase(sockID);
+	}
+
+	//delete the socket from bind sockets
+	int port = -1;
+	for( auto i : bind_sockets )
+	{
+		if( i.second == sockID)
+		{
+			port = i.first;
+			break;
+		}
+	}
+	
+	if( port != -1 )
+	{
+		bind_sockets.erase(port);
 	}
 }
